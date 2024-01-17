@@ -5,45 +5,83 @@ from ultralytics import YOLO
 model = YOLO('yolov8n.pt')
 
 # Open the video file
-video_path = "clip_13.mp4"
-cap = cv2.VideoCapture(video_path)
 
-# Loop through the video frames
-while cap.isOpened():
-    # Read a frame from the video
-    success, frame = cap.read()
+def detection_in_video():
+    video_path = "clip_13.mp4"
+    cap = cv2.VideoCapture(video_path)
+    video = cv2.VideoWriter('output/output_yolov8.mp4',  
+                         cv2.VideoWriter_fourcc(*'mp4v'), 
+                         10, (800,1200)) 
+    # Loop through the video frames
+    while cap.isOpened():
+        # Read a frame from the video
+        success, frame = cap.read()
 
-    if success:
+        if success:
+            
+            height, width = frame.shape[:2]
+            max_height = 800
+            max_width = 1200
+            scale = min(max_height/height, max_width/width)
+
+            resized_image = cv2.resize(frame, None, fx=scale, fy=scale)
+            # Run YOLOv8 inference on the frame
+            results = model(resized_image, classes=0,iou=0.9)
+
+            # # Visualize the results on the frame
+            # person_bbox = []
+            # person_conf = []
         
-        height, width = frame.shape[:2]
-        max_height = 800
-        max_width = 1200
-        scale = min(max_height/height, max_width/width)
+            # for cls,bbox,conf in zip(results[0].boxes.cls,results[0].boxes.data,results[0].boxes.conf):
+            #     if cls == 0:
+            #         person_bbox.append(bbox)
+            #         person_conf.append(conf)
 
-        resized_image = cv2.resize(frame, None, fx=scale, fy=scale)
-        # Run YOLOv8 inference on the frame
-        results = model(resized_image, classes=0,iou=0.9,half=True)
+            annotated_frame = results[0].plot()
+            video.write(annotated_frame)
+            # Display the annotated frame
+            # cv2.imshow("YOLOv8 Inference",annotated_frame)
 
-        # # Visualize the results on the frame
-        # person_bbox = []
-        # person_conf = []
-    
-        # for cls,bbox,conf in zip(results[0].boxes.cls,results[0].boxes.data,results[0].boxes.conf):
-        #     if cls == 0:
-        #         person_bbox.append(bbox)
-        #         person_conf.append(conf)
-
-        annotated_frame = results[0].plot()
-        # Display the annotated frame
-        cv2.imshow("YOLOv8 Inference",annotated_frame)
-
-        # Break the loop if 'q' is pressed
-        if cv2.waitKey(1) & 0xFF == ord("q"):
+            # Break the loop if 'q' is pressed
+            if cv2.waitKey(1) & 0xFF == ord("q"):
+                break
+        else:
+            # Break the loop if the end of the video is reached
             break
-    else:
-        # Break the loop if the end of the video is reached
-        break
 
-# Release the video capture object and close the display window
-cap.release()
-cv2.destroyAllWindows()
+    # Release the video capture object and close the display window
+    cap.release()
+    cv2.destroyAllWindows()
+def detection_in_img():
+    img = cv2.imread('./beatles.jpg')
+    height, width = img.shape[:2]
+    max_height = 800
+    max_width = 1200
+    scale = min(max_height/height, max_width/width)
+
+    resized_image = cv2.resize(img, None, fx=scale, fy=scale)
+    # Run YOLOv8 inference on the frame
+    results = model(resized_image, classes=0)
+
+    # # Visualize the results on the frame
+    # person_bbox = []
+    # person_conf = []
+
+    # for cls,bbox,conf in zip(results[0].boxes.cls,results[0].boxes.data,results[0].boxes.conf):
+    #     if cls == 0:
+    #         person_bbox.append(bbox)
+    #         person_conf.append(conf)
+
+    annotated_frame = results[0].plot()
+    # Display the annotated frame
+    cv2.imshow("YOLOv8 Inference",annotated_frame)
+
+    # Break the loop if 'q' is pressed
+    cv2.imwrite('output/out_yolov8.jpg',annotated_frame)
+    # cv2.imshow('Image',img)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+if __name__ == '__main__':
+    # detection_in_img()
+    detection_in_video()
