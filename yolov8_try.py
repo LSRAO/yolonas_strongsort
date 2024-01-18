@@ -9,24 +9,25 @@ model = YOLO('yolov8n.pt')
 def detection_in_video():
     video_path = "clip_13.mp4"
     cap = cv2.VideoCapture(video_path)
-    video = cv2.VideoWriter('output/output_yolov8.mp4',  
-                         cv2.VideoWriter_fourcc(*'mp4v'), 
-                         10, (800,1200)) 
+    frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    fps = cap.get(cv2.CAP_PROP_FPS)
+    video = cv2.VideoWriter('output/output_yolov8.mp4',cv2.VideoWriter_fourcc(*'mp4v'),fps,(frame_width,frame_height))
     # Loop through the video frames
-    while cap.isOpened():
+    while True:
         # Read a frame from the video
         success, frame = cap.read()
 
         if success:
             
-            height, width = frame.shape[:2]
-            max_height = 800
-            max_width = 1200
-            scale = min(max_height/height, max_width/width)
+            # height, width = frame.shape[:2]
+            # max_height = 800
+            # max_width = 1200
+            # scale = min(max_height/height, max_width/width)
 
-            resized_image = cv2.resize(frame, None, fx=scale, fy=scale)
+            # resized_image = cv2.resize(frame, None, fx=scale, fy=scale)
             # Run YOLOv8 inference on the frame
-            results = model(resized_image, classes=0,iou=0.9)
+            results = model(frame, classes=0,iou=0.5)
 
             # # Visualize the results on the frame
             # person_bbox = []
@@ -42,16 +43,20 @@ def detection_in_video():
             # Display the annotated frame
             # cv2.imshow("YOLOv8 Inference",annotated_frame)
 
-            # Break the loop if 'q' is pressed
-            if cv2.waitKey(1) & 0xFF == ord("q"):
-                break
+            # # Break the loop if 'q' is pressed
+            # if cv2.waitKey(1) & 0xFF == ord("q"):
+            #     break
         else:
             # Break the loop if the end of the video is reached
             break
 
     # Release the video capture object and close the display window
     cap.release()
+    video.release()
     cv2.destroyAllWindows()
+    
+    
+    
 def detection_in_img():
     img = cv2.imread('./beatles.jpg')
     height, width = img.shape[:2]
