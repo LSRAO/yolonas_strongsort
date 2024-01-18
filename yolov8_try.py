@@ -9,11 +9,12 @@ model = YOLO('yolov8n.pt')
 def detection_in_video():
     video_path = "clip_13.mp4"
     cap = cv2.VideoCapture(video_path)
-    video = cv2.VideoWriter('output/output_yolov8.mp4',  
-                         cv2.VideoWriter_fourcc(*'mp4v'), 
-                         10, (800,1200)) 
+    frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    fps = cap.get(cv2.CAP_PROP_FPS)
+    video = cv2.VideoWriter('output/output_yolov8.mp4',cv2.VideoWriter_fourcc(*'mp4v'),fps,(frame_width,frame_height))
     # Loop through the video frames
-    while cap.isOpened():
+    while True:
         # Read a frame from the video
         success, frame = cap.read()
 
@@ -38,13 +39,13 @@ def detection_in_video():
             #         person_conf.append(conf)
 
             annotated_frame = results[0].plot()
-            video.write(annotated_frame)
+            video.write(cv2.cvtColor(annotated_frame, cv2.COLOR_RGB2BGR))
             # Display the annotated frame
             # cv2.imshow("YOLOv8 Inference",annotated_frame)
 
-            # Break the loop if 'q' is pressed
-            if cv2.waitKey(1) & 0xFF == ord("q"):
-                break
+            # # Break the loop if 'q' is pressed
+            # if cv2.waitKey(1) & 0xFF == ord("q"):
+            #     break
         else:
             # Break the loop if the end of the video is reached
             break
@@ -52,6 +53,9 @@ def detection_in_video():
     # Release the video capture object and close the display window
     cap.release()
     cv2.destroyAllWindows()
+    
+    
+    
 def detection_in_img():
     img = cv2.imread('./beatles.jpg')
     height, width = img.shape[:2]
