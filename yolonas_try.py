@@ -33,7 +33,7 @@ def draw_bbox_with_info(image,person_bboxes_xyxy,person_confidence,class_names):
         
         # Combine the original image and the overlay
         # result = cv2.addWeighted(result, 1, overlay, 1.0, 0)
-        result = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
+        
 
     return result
 
@@ -71,13 +71,14 @@ def detecting_in_img():
     person_labels_names = ['person' for x in labels if x==0]
 
     img = draw_bbox_with_info(image,person_bboxes_xyxy,person_confidence,person_labels_names)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     cv2.imwrite('output/out.jpg',img)
     cv2.imshow('Image',img)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
 def detection_in_video():
-    yolo_nas = super_gradients.training.models.get("yolo_nas_l", pretrained_weights="coco")
+    yolo_nas = super_gradients.training.models.get("yolo_nas_l", pretrained_weights="coco").cuda()
     input_path = './clip_13.mp4'
     output_path = './output/output_yolonas.mp4'
 
@@ -118,7 +119,7 @@ def detection_in_video():
                                                   person_confidence=person_confidence,
                                                   person_bboxes_xyxy=person_bboxes_xyxy)
             
-            video.write(annotated_frame)
+            video.write(cv2.cvtColor(annotated_frame, cv2.COLOR_BGR2RGB))
         else:
             break
     cap.release()
@@ -128,3 +129,4 @@ def detection_in_video():
 
 if __name__ == '__main__':
     detection_in_video()
+    # detecting_in_img()
